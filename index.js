@@ -1,5 +1,6 @@
 var fs = require('fs'), path = require('path');
 var tablify = require('asciitable');
+var J = require('j');
 
 function parsecsvline(line, options) {
 	options = options || {};
@@ -41,20 +42,10 @@ function csvparse(data) {
 function csvread(path) { return csvparse(fs.readFileSync(path, 'utf8')); }
 
 function readfileraw(file) {
-	var sheetname;
-	switch(path.extname(file)) {
-		case '.xls':
-			var XLS = require('xlsjs');
-			var xls = XLS.readFile(file);
-			sheetname = process.argv[3] || xls.SheetNames[0];
-			return csvparse(XLS.utils.make_csv(xls.Sheets[sheetname]));
-		case '.xlsx':
-			var XLSX = require('xlsx');
-			var xlsx = XLSX.readFile(file);
-			sheetname = process.argv[3] || xlsx.SheetNames[0];
-			return csvparse(XLSX.utils.sheet_to_csv(xlsx.Sheets[sheetname]));
-		default: return csvread(file); 
-	}
+	var w = J.readFile(file);
+	var sheetname = process.argv[3] || w[1].SheetNames[0];
+	return csvparse(J.utils.to_csv(w)[sheetname]);
+	//return csvread(file); 
 }
 
 function readfile(file) {
